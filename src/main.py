@@ -3,23 +3,43 @@ import os
 import uvicorn
 
 from fastapi import FastAPI
-from fastapi import Query, Body, Form
+from fastapi import Query, Body, Form, Path
 from fastapi import HTTPException, status, Depends
-from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from typing import Optional
-from datetime import timedelta
 from dotenv import load_dotenv
+from controllers.cartas import todas_las_cartas
 
 from controllers.controllers import get_all_cities, get_all_countries, get_all_states, get_cities_by_country_code, get_cities_by_country_id, get_cities_by_country_name, get_states_by_country_code, get_states_by_country_id, get_states_by_country_name
 from controllers.secutity import authenticate_user, change_password_user, create_access_token, create_user_db, get_current_active_user, hash_password
-from models.models import NewUser, User, UserInput
+from controllers.vekn import get_usuario_from_vekn
+from models.models import NewUser, User
 
 app = FastAPI()
 
+origins = ['http://localhost', 'http://localhost:3000', 'http://192.168.1.100:3000']
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 load_dotenv()
 
-@app.get(f'/countries', tags=['Demográficos'])
+@app.get('/')
+def home():
+    return {"message": "OK"}
+
+@app.get('/all_cards', tags=['Cartas'])
+def get_all_cards(type: Optional[str] = Query(default='Library'), page: Optional[int] = Query(default=1), page_size: Optional[int] = Query(default=15)):
+    all_cards = todas_las_cartas(type, page, page_size)
+    return all_cards
+
+@app.get('/countries', tags=['Demográficos'])
 def get_countries():
     return get_all_countries()
 
@@ -33,7 +53,7 @@ def get_estados_pais(country_id: Optional[int] = Query(None), country_name: Opti
         return get_states_by_country_code(country_code)
     return get_all_states()
 
-@app.get(f'/cities', tags=['Demográficos'])
+@app.get('/cities', tags=['Demográficos'])
 def get_city(country_id: Optional[int] = Query(None), country_name: Optional[str] = Query(None), country_code: Optional[str] = Query(None)):
     if (country_id):
         return get_cities_by_country_id(country_id)
@@ -43,7 +63,10 @@ def get_city(country_id: Optional[int] = Query(None), country_name: Optional[str
         return get_cities_by_country_code(country_code)
     return get_all_cities()
 
-@app.post(f'/login', tags=['Usuario'])
+@app.get('/usuario/{vekn_id}', tags=['Usuario'])
+def get_user_from_vekn(vekn_id: int = Path(...)):
+    return get_usuario_from_vekn(vekn_id)
+
 @app.post('/token', tags=['Usuario'])
 def login(username: str = Form(...), password: str = Form(...)):
    
@@ -59,7 +82,7 @@ def login(username: str = Form(...), password: str = Form(...)):
     access_token = create_access_token({"sub": user.email, "rol": user.permiso})
     return {"access_token": access_token, "token_type": "bearer"}
 
-@app.put(f'/user/create', tags=['Usuario'])
+@app.put('/user/create', tags=['Usuario'])
 def create_user(new_user: NewUser = Body(...)):
     usuario = create_user_db(new_user)
     return usuario

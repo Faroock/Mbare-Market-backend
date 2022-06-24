@@ -26,7 +26,7 @@ def create_user_db(new_user: NewUser) -> User:
     if not state:
         state = get_state_by_code(new_user.state, country_id)
     state_id = state.id if state else new_user.state
-    user = User(
+    usuario = User(
         vekn_id = new_user.vekn_id,
         nick_name = new_user.nick_name,
         name = new_user.name,
@@ -37,8 +37,7 @@ def create_user_db(new_user: NewUser) -> User:
         password = hash_password(new_user.password),
         llave = new_user.email
     )
-    db.grabar_modelo(user)
-    return user
+    return {'user': usuario, 'return': db.grabar_modelo(usuario)}
 
 def change_password_user(email: str, new_password: str) -> User:
     user = get_user_by_email(email)
@@ -57,7 +56,7 @@ def change_password_user(email: str, new_password: str) -> User:
         rol = user.id_rol
     )
     db.grabar_modelo(usuario)
-    return usuario
+    return {'user': usuario, 'return': db.grabar_modelo(usuario)}
 
 def authenticate_user(username: str, password: str):
     user = get_user_by_email(username)
