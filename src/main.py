@@ -18,7 +18,7 @@ from models.models import NewUser, User
 
 app = FastAPI()
 
-origins = ['http://localhost', 'http://localhost:3000', 'http://192.168.1.100:3000']
+origins = ['http://localhost', 'http://localhost:3000', 'http://192.168.1.100:3000', 'https://mbare-market-backend-production.up.railway.app']
 
 app.add_middleware(
     CORSMiddleware,
