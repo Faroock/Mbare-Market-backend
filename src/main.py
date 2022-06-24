@@ -18,12 +18,8 @@ from models.models import NewUser, User
 
 app = FastAPI()
 
-origins = ['http://localhost', 
-            'http://localhost:3000', 
-            'http://192.168.1.100:3000', 
-            'https://mbare-market-frontend-production.up.railway.app/',
-            'https://mbare-market-frontend-production.up.railway.app',
-            '*']
+load_dotenv()
+origins = os.getenv('CORS').split(',')
 
 app.add_middleware(
     CORSMiddleware,
@@ -33,7 +29,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-load_dotenv()
 
 @app.get('/')
 def home():
